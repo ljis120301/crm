@@ -1,103 +1,303 @@
-import Image from "next/image";
+'use client'
 
-export default function Home() {
+import { useState, useEffect } from 'react'
+import CustomerSearchHeader from '@/components/CustomerSearchHeader'
+import CustomerList from '@/components/CustomerList'
+import CustomerDetails from '@/components/CustomerDetails'
+import NotesSection from '@/components/NotesSection'
+import AddCustomerDialog from '@/components/AddCustomerDialog'
+import ManageFieldsDialog from '@/components/ManageFieldsDialog'
+import DeleteConfirmationDialog from '@/components/DeleteConfirmationDialog'
+
+export default function CustomerManagement() {
+  const [customers, setCustomers] = useState([])
+  const [fields, setFields] = useState([])
+  const [notes, setNotes] = useState([])
+  const [isAddCustomerOpen, setIsAddCustomerOpen] = useState(false)
+  const [isManageFieldsOpen, setIsManageFieldsOpen] = useState(false)
+  const [isDeleteCustomerOpen, setIsDeleteCustomerOpen] = useState(false)
+  const [isDeleteFieldOpen, setIsDeleteFieldOpen] = useState(false)
+  const [isDeleteNoteOpen, setIsDeleteNoteOpen] = useState(false)
+  const [customerToDelete, setCustomerToDelete] = useState(null)
+  const [fieldToDelete, setFieldToDelete] = useState(null)
+  const [noteToDelete, setNoteToDelete] = useState(null)
+  const [editingCustomer, setEditingCustomer] = useState(null)
+  const [editingField, setEditingField] = useState(null)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedCustomer, setSelectedCustomer] = useState(null)
+  const [newNote, setNewNote] = useState('')
+
+  useEffect(() => {
+    fetchCustomers()
+    fetchFields()
+  }, [])
+
+  const fetchCustomers = async () => {
+    try {
+      const response = await fetch('/api/customers')
+      const data = await response.json()
+      const customersData = Array.isArray(data) ? data : []
+      setCustomers(customersData)
+      
+      // Update selectedCustomer if one is currently selected
+      if (selectedCustomer) {
+        const updatedSelectedCustomer = customersData.find(c => c.id === selectedCustomer.id)
+        if (updatedSelectedCustomer) {
+          setSelectedCustomer(updatedSelectedCustomer)
+        }
+      }
+    } catch (error) {
+      setCustomers([])
+    }
+  }
+
+  const fetchFields = async () => {
+    try {
+      const response = await fetch('/api/fields')
+      const data = await response.json()
+      setFields(data)
+    } catch (error) {
+    }
+  }
+
+  const fetchNotes = async (customerId) => {
+    if (!customerId) return
+    try {
+      const response = await fetch(`/api/notes?customerId=${customerId}`)
+      const data = await response.json()
+      setNotes(data)
+    } catch (error) {
+    }
+  }
+
+  const handleCustomerSubmit = async (customerData, editingCustomer) => {
+    try {
+      if (editingCustomer) {
+        await fetch(`/api/customers/${editingCustomer.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(customerData)
+        })
+      } else {
+        await fetch('/api/customers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(customerData)
+        })
+      }
+
+      setEditingCustomer(null)
+      setIsAddCustomerOpen(false)
+      fetchCustomers()
+    } catch (error) {
+    }
+  }
+
+  const handleFieldSubmit = async (fieldData, editingField) => {
+    try {
+      if (editingField) {
+        await fetch(`/api/fields/${editingField.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(fieldData)
+        })
+      } else {
+        await fetch('/api/fields', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(fieldData)
+        })
+      }
+
+      setEditingField(null)
+      setIsManageFieldsOpen(false)
+      fetchFields()
+      // Also refresh customers to update their customFields structure
+      fetchCustomers()
+    } catch (error) {
+    }
+  }
+
+  const deleteCustomer = async (id) => {
+    try {
+      await fetch(`/api/customers/${id}`, { method: 'DELETE' })
+      fetchCustomers()
+      if (selectedCustomer?.id === id) {
+        setSelectedCustomer(null)
+        setNotes([])
+      }
+      setIsDeleteCustomerOpen(false)
+      setCustomerToDelete(null)
+    } catch (error) {
+    }
+  }
+
+  const deleteField = async (id) => {
+    try {
+      await fetch(`/api/fields/${id}`, { method: 'DELETE' })
+      fetchFields()
+      // Also refresh customers to update their customFields structure
+      fetchCustomers()
+      setIsDeleteFieldOpen(false)
+      setFieldToDelete(null)
+    } catch (error) {
+    }
+  }
+
+  const editCustomer = (customer) => {
+    setEditingCustomer(customer)
+    setIsAddCustomerOpen(true)
+  }
+
+  const addNote = async () => {
+    if (!newNote.trim() || !selectedCustomer) return
+    
+    try {
+      await fetch('/api/notes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: newNote.trim(),
+          customerId: selectedCustomer.id
+        })
+      })
+      
+      setNewNote('')
+      fetchNotes(selectedCustomer.id)
+    } catch (error) {
+    }
+  }
+
+  const deleteNote = async (noteId) => {
+    try {
+      await fetch(`/api/notes/${noteId}`, { method: 'DELETE' })
+      fetchNotes(selectedCustomer.id)
+      setIsDeleteNoteOpen(false)
+      setNoteToDelete(null)
+    } catch (error) {
+    }
+  }
+
+  const editField = (field) => {
+    setEditingField(field)
+    setIsManageFieldsOpen(true)
+  }
+
+  const handleCustomerSelect = (customer) => {
+    setSelectedCustomer(customer)
+    fetchNotes(customer.id)
+  }
+
+  const handleCustomerDelete = (customer) => {
+    setCustomerToDelete(customer)
+    setIsDeleteCustomerOpen(true)
+  }
+
+  const handleFieldDelete = (field) => {
+    setFieldToDelete(field)
+    setIsDeleteFieldOpen(true)
+  }
+
+  const handleNoteDelete = (note) => {
+    setNoteToDelete(note)
+    setIsDeleteNoteOpen(true)
+  }
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
+    <div className="h-screen flex">
+      {/* Left Sidebar - Search and Customer List */}
+      <div className="w-1/3 border-r border-gray-200 flex flex-col">
+        <CustomerSearchHeader
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          onManageFieldsOpen={() => setIsManageFieldsOpen(true)}
+          onAddCustomerOpen={() => setIsAddCustomerOpen(true)}
         />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+        <CustomerList
+          customers={customers}
+          selectedCustomer={selectedCustomer}
+          searchTerm={searchTerm}
+          onCustomerSelect={handleCustomerSelect}
+          onCustomerEdit={editCustomer}
+          onCustomerDelete={handleCustomerDelete}
+        />
+      </div>
+
+      {/* Right Side - Customer Details */}
+      <div className="flex-1 p-6">
+        <CustomerDetails
+          customer={selectedCustomer}
+          fields={fields}
+          onEdit={editCustomer}
+          onDelete={handleCustomerDelete}
+        />
+
+        {selectedCustomer && (
+          <NotesSection
+            notes={notes}
+            newNote={newNote}
+            onNewNoteChange={setNewNote}
+            onAddNote={addNote}
+            onDeleteNote={handleNoteDelete}
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        )}
+      </div>
+
+      {/* Dialogs */}
+      <AddCustomerDialog
+        isOpen={isAddCustomerOpen}
+        onOpenChange={setIsAddCustomerOpen}
+        editingCustomer={editingCustomer}
+        fields={fields}
+        onSubmit={handleCustomerSubmit}
+      />
+
+      <ManageFieldsDialog
+        isOpen={isManageFieldsOpen}
+        onOpenChange={setIsManageFieldsOpen}
+        fields={fields}
+        editingField={editingField}
+        onSubmit={handleFieldSubmit}
+        onEditField={editField}
+        onDeleteField={handleFieldDelete}
+      />
+
+      <DeleteConfirmationDialog
+        isOpen={isDeleteCustomerOpen}
+        onOpenChange={setIsDeleteCustomerOpen}
+        title="Delete Customer"
+        description={`Are you sure you want to delete "${customerToDelete?.name}"? This action cannot be undone.`}
+        onConfirm={() => deleteCustomer(customerToDelete?.id)}
+        onCancel={() => {
+          setIsDeleteCustomerOpen(false)
+          setCustomerToDelete(null)
+        }}
+      />
+
+      <DeleteConfirmationDialog
+        isOpen={isDeleteFieldOpen}
+        onOpenChange={setIsDeleteFieldOpen}
+        title="Delete Field"
+        description={`Are you sure you want to delete the field "${fieldToDelete?.label}"? This action cannot be undone.`}
+        onConfirm={() => deleteField(fieldToDelete?.id)}
+        onCancel={() => {
+          setIsDeleteFieldOpen(false)
+          setFieldToDelete(null)
+        }}
+      />
+
+      <DeleteConfirmationDialog
+        isOpen={isDeleteNoteOpen}
+        onOpenChange={setIsDeleteNoteOpen}
+        title="Delete Note"
+        description="Are you sure you want to delete this note? This action cannot be undone."
+        onConfirm={() => deleteNote(noteToDelete?.id)}
+        onCancel={() => {
+          setIsDeleteNoteOpen(false)
+          setNoteToDelete(null)
+        }}
+      />
     </div>
-  );
+  )
 }
