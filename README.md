@@ -1,36 +1,165 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Customer Management System
 
-## Getting Started
+A full-stack Next.js application for managing customer information with dynamic field support. Built for receptionists to easily add, edit, and manage customer records with customizable fields.
 
-First, run the development server:
+## Quick Start
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+### Development
+
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+2. Set up the database:
+   ```bash
+   npx prisma generate
+   npx prisma db push
+   ```
+
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+### Docker Deployment
+
+1. Build and run with Docker Compose:
+   ```bash
+   docker-compose up --build
+   ```
+
+2. The application will be available at [http://localhost:3000](http://localhost:3000)
+
+### Manual Docker Build
+
+1. Build the Docker image:
+   ```bash
+   docker build -t customer-management .
+   ```
+
+2. Run the container:
+   ```bash
+   docker run -p 3000:3000 customer-management
+   ```
+
+## Usage
+
+### Adding Customers
+
+1. Click "Add Customer" to open the customer form
+2. Fill in the required fields (Name and Phone)
+3. Add any optional information (Email and custom fields)
+4. Click "Add Customer" to save
+
+### Managing Custom Fields
+
+1. Click "Manage Fields" to open the field management dialog
+2. Add new fields with:
+   - **Field Name**: Internal identifier (e.g., `customer_id`)
+   - **Display Label**: User-friendly name (e.g., `Customer ID`)
+   - **Field Type**: Choose from text, email, phone, number, textarea, or select
+   - **Required**: Check if the field is mandatory
+   - **Options**: For select fields, provide comma-separated options
+
+3. Edit or delete existing fields as needed
+
+### Field Types
+
+- **Text**: Single line text input
+- **Email**: Email address with validation
+- **Phone**: Phone number input
+- **Number**: Numeric input
+- **Text Area**: Multi-line text input
+- **Select**: Dropdown with predefined options
+
+## Database Schema
+
+The application uses a flexible schema with two main tables:
+
+### Customers
+- `id`: Unique identifier
+- `name`: Customer name (required)
+- `phone`: Phone number (required)
+- `email`: Email address (optional)
+- `customFields`: JSON string containing dynamic field values
+- `createdAt`: Record creation timestamp
+- `updatedAt`: Last update timestamp
+
+### Field Definitions
+- `id`: Unique identifier
+- `name`: Field name (unique)
+- `label`: Display label
+- `type`: Field type
+- `required`: Whether field is required
+- `options`: JSON string of options (for select fields)
+- `order`: Display order
+- `createdAt`: Field creation timestamp
+- `updatedAt`: Last update timestamp
+
+## API Endpoints
+
+### Customers
+- `GET /api/customers` - Get all customers
+- `POST /api/customers` - Create new customer
+- `GET /api/customers/[id]` - Get specific customer
+- `PUT /api/customers/[id]` - Update customer
+- `DELETE /api/customers/[id]` - Delete customer
+
+### Field Definitions
+- `GET /api/fields` - Get all field definitions
+- `POST /api/fields` - Create new field definition
+- `PUT /api/fields/[id]` - Update field definition
+- `DELETE /api/fields/[id]` - Delete field definition
+
+## Technology Stack
+
+- **Frontend**: Next.js 15, React 19, Tailwind CSS 4
+- **UI Components**: shadcn/ui
+- **Forms**: React Hook Form
+- **Database**: SQLite with Prisma ORM
+- **Icons**: Lucide React
+- **Deployment**: Docker
+
+## Development
+
+### Project Structure
+
+```
+crm/
+├── app/
+│   ├── api/           # API routes
+│   ├── globals.css    # Global styles
+│   ├── layout.js      # Root layout
+│   └── page.js        # Main page
+├── components/
+│   └── ui/            # shadcn components
+├── lib/
+│   ├── db.js          # Database client
+│   └── utils.js       # Utility functions
+├── prisma/
+│   └── schema.prisma  # Database schema
+├── Dockerfile         # Docker configuration
+├── docker-compose.yml # Docker Compose
+└── package.json       # Dependencies
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Adding New Features
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+1. **New Field Types**: Add new field types in the field management form
+2. **Custom Validation**: Extend form validation in the API routes
+3. **Additional Views**: Create new pages for different customer views
+4. **Search/Filter**: Add search functionality to the customer table
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Security Considerations
 
-## Learn More
+- Input validation on all API endpoints
+- SQL injection protection via Prisma ORM
+- XSS protection through React's built-in escaping
+- CSRF protection via Next.js
 
-To learn more about Next.js, take a look at the following resources:
+## License
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project is for internal use only.

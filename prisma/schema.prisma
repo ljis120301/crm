@@ -1,0 +1,52 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String
+  email     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Dynamic fields stored as JSON string
+  customFields String @default("{}")
+  
+  // Notes relationship
+  notes Note[]
+  
+  @@map("customers")
+}
+
+model Note {
+  id         String   @id @default(cuid())
+  content    String
+  createdAt  DateTime @default(now())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  
+  @@map("notes")
+}
+
+model FieldDefinition {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  label       String
+  type        String   // text, email, phone, number, textarea, select
+  required    Boolean  @default(false)
+  options     String?  // For select fields, stores JSON string of options
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("field_definitions")
+}
