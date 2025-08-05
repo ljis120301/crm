@@ -37,9 +37,17 @@ export async function POST(request) {
       { status: 200 }
     );
 
+    const cookieSecure = process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_HTTPS === 'true';
+    console.log('Setting session cookie (login):', {
+      hasToken: !!session.token,
+      secure: cookieSecure,
+      nodeEnv: process.env.NODE_ENV,
+      httpsEnabled: process.env.NEXT_PUBLIC_HTTPS
+    });
+
     response.cookies.set('session-token', session.token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: cookieSecure,
       sameSite: 'lax',
       maxAge: 24 * 60 * 60, // 24 hours
     });
