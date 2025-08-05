@@ -15,8 +15,11 @@ export const metadata = {
   title: "Cocopah CRM",
   description: "Cocopah CRM",
   icons: {
-    icon: '/cocopah.png',
-    shortcut: '/cocopah.png',
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/cocopah.png', type: 'image/png' },
+    ],
+    shortcut: '/favicon.ico',
     apple: '/cocopah.png',
   },
 };
