@@ -1,17 +1,11 @@
 name: crm-app
 services:
   crm:
-    cpu_shares: 90
-    command: []
     container_name: crm
-    deploy:
-      resources:
-        limits:
-          memory: 2048M
     entrypoint:
       - sh
       - -c
-      - >
+      - |
         echo "=== CRM Application Startup Log ==="
         
         echo "Node version: $(node --version)"
@@ -31,7 +25,7 @@ services:
         echo "[STEP 3] Cloning repository..."
         cd /tmp
         rm -rf crm-app 2>/dev/null || true
-        git clone https://github.com/jasongraham/crm.git crm-app
+        git clone https://github.com/ljis120301/crm.git crm-app
         if [ $? -ne 0 ]; then
           echo "ERROR: Failed to clone repository"
           exit 1
@@ -42,7 +36,13 @@ services:
         echo "Repository cloned successfully"
         echo ""
         
-        echo "[STEP 4] Verifying project structure..."
+        echo "[STEP 4] Creating .env file..."
+        echo 'DATABASE_URL="file:./dev.db"' > /app/.env
+        echo 'ADMIN_PASSWORD=120301' >> /app/.env
+        echo "✓ .env file created with environment variables"
+        echo ""
+        
+        echo "[STEP 5] Verifying project structure..."
         if [ -f package.json ]; then
           echo "✓ package.json found"
         else
@@ -76,7 +76,7 @@ services:
         
         echo ""
         
-        echo "[STEP 5] Installing npm dependencies..."
+        echo "[STEP 6] Installing npm dependencies..."
         npm install
         if [ $? -ne 0 ]; then
           echo "ERROR: npm install failed"
@@ -85,7 +85,7 @@ services:
         echo "Dependencies installed successfully"
         echo ""
         
-        echo "[STEP 6] Setting up database..."
+        echo "[STEP 7] Setting up database..."
         if [ -f prisma/schema.prisma ]; then
           echo "✓ Prisma schema found"
           echo "Generating Prisma client..."
@@ -96,10 +96,18 @@ services:
           fi
           echo "✓ Prisma client generated"
           
+          echo "Creating database directory..."
+          mkdir -p /app/prisma
+          chmod 755 /app/prisma
+          echo "Database directory created: $(ls -la /app/prisma)"
+          
+          echo "Setting up database with URL: $DATABASE_URL"
           echo "Running database migrations..."
           npx prisma db push
           if [ $? -ne 0 ]; then
             echo "WARNING: Database push failed, but continuing..."
+            echo "Database directory contents:"
+            ls -la /app/prisma || echo "Cannot list prisma directory"
           else
             echo "✓ Database migrations completed"
           fi
@@ -108,7 +116,12 @@ services:
         fi
         echo ""
         
-        echo "[STEP 7] Building application..."
+        echo "[STEP 8] Building application..."
+        echo "Current directory: $(pwd)"
+        echo "Directory contents:"
+        ls -la
+        echo ""
+        
         npm run build
         if [ $? -ne 0 ]; then
           echo "ERROR: Build failed"
@@ -119,62 +132,22 @@ services:
           cat package.json | grep -A 10 '"scripts"'
           echo "Package.json dependencies:"
           cat package.json | grep -A 20 '"dependencies"'
+          echo "Environment variables:"
+          env | grep -E "(NODE_ENV|DATABASE_URL)" || echo "No relevant env vars found"
           exit 1
         fi
         echo "Build completed successfully"
         echo ""
         
-        echo "[STEP 8] Starting CRM application on port 3000..."
+        echo "[STEP 9] Starting CRM application on port 3000..."
         exec npm start
     environment:
       - GIT_TERMINAL_PROMPT=0
       - NODE_ENV=production
-      - DATABASE_URL=file:./dev.db
+      - DATABASE_URL=file:/app/prisma/dev.db
     hostname: crm
     image: node:18-alpine
-    labels:
-      icon: https://icon.casaos.io/main/all/crm.png
     ports:
-      - target: 3000
-        published: "3000"
-        protocol: tcp
+      - "3000:3000"
     restart: unless-stopped
-    working_dir: /app
-    x-casaos:
-      architectures:
-        - amd64
-        - arm64
-      category: Business
-      description:
-        en_us: A modern CRM application built with Next.js, Prisma, and Tailwind CSS. Features customer management, notes, custom fields, and a beautiful UI.
-      developer: jasongraham
-      icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/nextjs.png
-      index: /
-      main: crm
-      port_map: "3000"
-      scheme: http
-      screenshot_link:
-        - https://raw.githubusercontent.com/jasongraham/crm/main/public/screenshot.png
-      store_app_id: crm
-      tagline:
-        en_us: Modern CRM - Customer Relationship Management System
-      tips:
-        en_us: The CRM application provides customer management, notes, and custom fields. Access the CRM at http://your-server-ip:3000. The application automatically clones from GitHub and sets up a fresh database on each container restart. Check container logs for detailed startup information.
-    volumes: []
-    devices: []
-    cap_add: []
-    network_mode: bridge
-    privileged: false
-x-casaos:
-  author: self
-  category: self
-  hostname: ""
-  icon: https://icon.casaos.io/main/all/crm.png
-  index: /
-  is_uncontrolled: false
-  port_map: ""
-  scheme: http
-  store_app_id: crm-app
-  title:
-    custom: ""
-    en_us: CRM Application 
+    working_dir: /app 
