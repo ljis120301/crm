@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import CustomerSearchHeader from '@/components/CustomerSearchHeader'
 import CustomerList from '@/components/CustomerList'
 import CustomerDetails from '@/components/CustomerDetails'
@@ -8,6 +9,8 @@ import NotesSection from '@/components/NotesSection'
 import AddCustomerDialog from '@/components/AddCustomerDialog'
 import ManageFieldsDialog from '@/components/ManageFieldsDialog'
 import DeleteConfirmationDialog from '@/components/DeleteConfirmationDialog'
+import { Button } from '@/components/ui/button'
+import { LogOut, User } from 'lucide-react'
 
 export default function CustomerManagement() {
   const [customers, setCustomers] = useState([])
@@ -26,11 +29,40 @@ export default function CustomerManagement() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCustomer, setSelectedCustomer] = useState(null)
   const [newNote, setNewNote] = useState('')
+  const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const router = useRouter()
 
   useEffect(() => {
+    checkAuth()
     fetchCustomers()
     fetchFields()
   }, [])
+
+  const checkAuth = async () => {
+    try {
+      const response = await fetch('/api/auth/me')
+      if (!response.ok) {
+        router.push('/login')
+        return
+      }
+      const userData = await response.json()
+      setUser(userData)
+    } catch (error) {
+      router.push('/login')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' })
+      router.push('/login')
+    } catch (error) {
+      console.error('Logout error:', error)
+    }
+  }
 
   const fetchCustomers = async () => {
     try {
@@ -203,45 +235,76 @@ export default function CustomerManagement() {
     setIsDeleteNoteOpen(true)
   }
 
-  return (
-    <div className="h-screen flex">
-      {/* Left Sidebar - Search and Customer List */}
-      <div className="w-1/3 border-r border-gray-200 flex flex-col">
-        <CustomerSearchHeader
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onManageFieldsOpen={() => setIsManageFieldsOpen(true)}
-          onAddCustomerOpen={() => setIsAddCustomerOpen(true)}
-        />
+  if (loading) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-2">Loading...</p>
+        </div>
+      </div>
+    )
+  }
 
-        <CustomerList
-          customers={customers}
-          selectedCustomer={selectedCustomer}
-          searchTerm={searchTerm}
-          onCustomerSelect={handleCustomerSelect}
-          onCustomerEdit={editCustomer}
-          onCustomerDelete={handleCustomerDelete}
-        />
+  return (
+    <div className="h-screen flex flex-col">
+      {/* Header with user info and logout */}
+      <div className="bg-white border-b border-gray-200 px-6 py-3 flex justify-between items-center">
+        <div className="flex items-center space-x-3">
+          <h1 className="text-xl font-semibold text-gray-900">Customer Management System</h1>
+        </div>
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 text-sm text-gray-600">
+            <User className="h-4 w-4" />
+            <span>Welcome, {user?.username}</span>
+          </div>
+          <Button onClick={handleLogout} variant="outline" size="sm">
+            <LogOut className="h-4 w-4 mr-2" />
+            Logout
+          </Button>
+        </div>
       </div>
 
-      {/* Right Side - Customer Details */}
-      <div className="flex-1 p-6">
-        <CustomerDetails
-          customer={selectedCustomer}
-          fields={fields}
-          onEdit={editCustomer}
-          onDelete={handleCustomerDelete}
-        />
-
-        {selectedCustomer && (
-          <NotesSection
-            notes={notes}
-            newNote={newNote}
-            onNewNoteChange={setNewNote}
-            onAddNote={addNote}
-            onDeleteNote={handleNoteDelete}
+      {/* Main content */}
+      <div className="flex-1 flex">
+        {/* Left Sidebar - Search and Customer List */}
+        <div className="w-1/3 border-r border-gray-200 flex flex-col">
+          <CustomerSearchHeader
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            onManageFieldsOpen={() => setIsManageFieldsOpen(true)}
+            onAddCustomerOpen={() => setIsAddCustomerOpen(true)}
           />
-        )}
+
+          <CustomerList
+            customers={customers}
+            selectedCustomer={selectedCustomer}
+            searchTerm={searchTerm}
+            onCustomerSelect={handleCustomerSelect}
+            onCustomerEdit={editCustomer}
+            onCustomerDelete={handleCustomerDelete}
+          />
+        </div>
+
+        {/* Right Side - Customer Details */}
+        <div className="flex-1 p-6">
+          <CustomerDetails
+            customer={selectedCustomer}
+            fields={fields}
+            onEdit={editCustomer}
+            onDelete={handleCustomerDelete}
+          />
+
+          {selectedCustomer && (
+            <NotesSection
+              notes={notes}
+              newNote={newNote}
+              onNewNoteChange={setNewNote}
+              onAddNote={addNote}
+              onDeleteNote={handleNoteDelete}
+            />
+          )}
+        </div>
       </div>
 
       {/* Dialogs */}
