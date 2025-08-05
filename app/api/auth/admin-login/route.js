@@ -13,6 +13,14 @@ export async function POST(request) {
       );
     }
 
+    // Debug logging
+    console.log('Admin login attempt:', {
+      hasPassword: !!adminPassword,
+      adminPasswordEnv: !!process.env.ADMIN_PASSWORD,
+      nodeEnv: process.env.NODE_ENV,
+      httpsEnabled: process.env.NEXT_PUBLIC_HTTPS
+    });
+
     const isValid = await authenticateAdmin(adminPassword);
 
     if (!isValid) {
@@ -54,9 +62,17 @@ export async function POST(request) {
       { status: 200 }
     );
 
+    const cookieSecure = process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_HTTPS === 'true';
+    console.log('Setting session cookie:', {
+      hasToken: !!session.token,
+      secure: cookieSecure,
+      nodeEnv: process.env.NODE_ENV,
+      httpsEnabled: process.env.NEXT_PUBLIC_HTTPS
+    });
+
     response.cookies.set('session-token', session.token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: cookieSecure,
       sameSite: 'lax',
       maxAge: 24 * 60 * 60, // 24 hours
     });

@@ -145,6 +145,7 @@ services:
       - GIT_TERMINAL_PROMPT=0
       - NODE_ENV=production
       - DATABASE_URL=file:/app/prisma/dev.db
+      - NEXT_PUBLIC_HTTPS=false
     hostname: crm
     image: node:18-alpine
     ports:
