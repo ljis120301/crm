@@ -249,26 +249,28 @@ export default function CustomerManagement() {
   return (
     <div className="h-screen flex flex-col">
       {/* Header with user info and logout */}
-      <div className="bg-white border-b border-gray-200 px-6 py-3 flex justify-between items-center">
+      <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div className="flex items-center space-x-3">
-          <h1 className="text-xl font-semibold text-gray-900">Customer Management System</h1>
+          <h1 className="text-lg sm:text-xl font-semibold text-gray-900">Customer Management System</h1>
         </div>
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2 sm:space-x-4 w-full sm:w-auto">
           <div className="flex items-center space-x-2 text-sm text-gray-600">
             <User className="h-4 w-4" />
-            <span>Welcome, {user?.username}</span>
+            <span className="hidden sm:inline">Welcome, {user?.username}</span>
+            <span className="sm:hidden">{user?.username}</span>
           </div>
           <Button onClick={handleLogout} variant="outline" size="sm">
-            <LogOut className="h-4 w-4 mr-2" />
-            Logout
+            <LogOut className="h-4 w-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Logout</span>
+            <span className="sm:hidden">Out</span>
           </Button>
         </div>
       </div>
 
       {/* Main content */}
-      <div className="flex-1 flex">
+      <div className="flex-1 flex flex-col lg:flex-row">
         {/* Left Sidebar - Search and Customer List */}
-        <div className="w-1/3 border-r border-gray-200 flex flex-col">
+        <div className="w-full lg:w-1/3 xl:w-1/4 border-b lg:border-b-0 lg:border-r border-gray-200 flex flex-col">
           <CustomerSearchHeader
             searchTerm={searchTerm}
             onSearchChange={setSearchTerm}
@@ -287,7 +289,7 @@ export default function CustomerManagement() {
         </div>
 
         {/* Right Side - Customer Details */}
-        <div className="flex-1 p-6">
+        <div className="flex-1 p-4 sm:p-6">
           <CustomerDetails
             customer={selectedCustomer}
             fields={fields}

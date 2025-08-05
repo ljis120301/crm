@@ -19,15 +19,15 @@ export default function CustomerCard({
       }`}
       onClick={() => onSelect(customer)}
     >
-      <div className="flex justify-between items-start">
-        <div className="flex-1">
-          <h3 className="font-medium text-gray-900">{customer.name}</h3>
-          <p className="text-sm text-gray-600">{customer.phone}</p>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
+        <div className="flex-1 min-w-0">
+          <h3 className="font-medium text-gray-900 truncate">{customer.name}</h3>
+          <p className="text-sm text-gray-600 truncate">{customer.phone}</p>
           {customer.email && (
-            <p className="text-sm text-gray-600">{customer.email}</p>
+            <p className="text-sm text-gray-600 truncate">{customer.email}</p>
           )}
         </div>
-        <div className="flex gap-1">
+        <div className="flex gap-1 flex-shrink-0">
           <Button
             size="sm"
             variant="outline"
