@@ -13,7 +13,7 @@ export default function CustomerSearchHeader({
 }) {
   return (
     <div className="p-3 sm:p-4 border-b border-gray-200">
-      <h1 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">Customer Management</h1>
+      <h1 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">THMP Management</h1>
       
       {/* Search Bar */}
       <div className="relative mb-3 sm:mb-4">
@@ -36,7 +36,7 @@ export default function CustomerSearchHeader({
 
         <Button size="sm" onClick={onAddCustomerOpen} className="flex-1 sm:flex-none">
           <Plus className="w-4 h-4 mr-1 sm:mr-2" />
-          <span className="hidden sm:inline">Add Customer</span>
+          <span className="hidden sm:inline">Add Tribe Member</span>
           <span className="sm:hidden">Add</span>
         </Button>
       </div>

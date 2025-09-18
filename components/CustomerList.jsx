@@ -21,7 +21,7 @@ export default function CustomerList({
     <div className="flex-1 overflow-y-auto">
       <div className="p-3 sm:p-4">
         <h2 className="text-base sm:text-lg font-semibold mb-3">
-          Customers ({filteredCustomers.length})
+          Tribe Members ({filteredCustomers.length})
         </h2>
         <div className="space-y-2">
           {filteredCustomers.map((customer) => (
@@ -36,7 +36,7 @@ export default function CustomerList({
           ))}
           {filteredCustomers.length === 0 && (
             <div className="text-center py-8 text-gray-500 text-sm sm:text-base">
-              {searchTerm ? 'No customers found matching your search.' : 'No customers yet. Add your first customer!'}
+              {searchTerm ? 'No tribe members found matching your search.' : 'No tribe members yet. Add your first tribe member!'}
             </div>
           )}
         </div>

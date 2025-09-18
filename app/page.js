@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import CustomerSearchHeader from '@/components/CustomerSearchHeader'
 import CustomerList from '@/components/CustomerList'
 import CustomerDetails from '@/components/CustomerDetails'
@@ -251,7 +252,16 @@ export default function CustomerManagement() {
       {/* Header with user info and logout */}
       <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div className="flex items-center space-x-3">
-          <h1 className="text-lg sm:text-xl font-semibold text-gray-900">Customer Management System</h1>
+          <Image
+            src="/cocopah.png"
+            alt="Cocopah Indian Tribe logo"
+            width={36}
+            height={36}
+            className="rounded-full h-12 w-12"
+            unoptimized
+            priority
+          />
+          <h1 className="text-lg sm:text-xl font-semibold text-gray-900">Cocopah Tribal Health Management Program</h1>
         </div>
         <div className="flex items-center space-x-2 sm:space-x-4 w-full sm:w-auto">
           <div className="flex items-center space-x-2 text-sm text-gray-600">
