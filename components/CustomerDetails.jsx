@@ -15,9 +15,9 @@ export default function CustomerDetails({
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
           <User className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-600 mb-2">No Customer Selected</h2>
+          <h2 className="text-xl font-semibold text-gray-600 mb-2">No Tribe Member Selected</h2>
           <p className="text-gray-500">
-            Select a customer from the list to view their details
+            Select a tribe member from the list to view their details
           </p>
         </div>
       </div>
@@ -35,7 +35,7 @@ export default function CustomerDetails({
                 {customer.name}
               </CardTitle>
               <CardDescription>
-                Customer Details
+                Tribe Member Details
               </CardDescription>
             </div>
             <div className="flex gap-2">
