@@ -11,13 +11,7 @@ A full-stack Next.js application for managing customer information with dynamic 
    npm install
    ```
 
-2. Set up the database:
-   ```bash
-   npx prisma generate
-   npx prisma db push
-   ```
-
-3. Start the development server:
+2. Start the development server: ( I added Prisma start into the package.json dev command)
    ```bash
    npm run dev
    ```
@@ -123,43 +117,3 @@ The application uses a flexible schema with two main tables:
 - **Icons**: Lucide React
 - **Deployment**: Docker
 
-## Development
-
-### Project Structure
-
-```
-crm/
-├── app/
-│   ├── api/           # API routes
-│   ├── globals.css    # Global styles
-│   ├── layout.js      # Root layout
-│   └── page.js        # Main page
-├── components/
-│   └── ui/            # shadcn components
-├── lib/
-│   ├── db.js          # Database client
-│   └── utils.js       # Utility functions
-├── prisma/
-│   └── schema.prisma  # Database schema
-├── Dockerfile         # Docker configuration
-├── docker-compose.yml # Docker Compose
-└── package.json       # Dependencies
-```
-
-### Adding New Features
-
-1. **New Field Types**: Add new field types in the field management form
-2. **Custom Validation**: Extend form validation in the API routes
-3. **Additional Views**: Create new pages for different customer views
-4. **Search/Filter**: Add search functionality to the customer table
-
-## Security Considerations
-
-- Input validation on all API endpoints
-- SQL injection protection via Prisma ORM
-- XSS protection through React's built-in escaping
-- CSRF protection via Next.js
-
-## License
-
-This project is for internal use only.
